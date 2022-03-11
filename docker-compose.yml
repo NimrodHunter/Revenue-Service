@@ -1,0 +1,11 @@
+services:
+  reward-service:
+    build: .
+    user: node
+    ports:
+      - "3000:3000" 
+    volumes:
+      - /usr/src/app/node_modules
+      - /usr/src/app
+    env_file:
+      - .env

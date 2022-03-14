@@ -2,6 +2,7 @@ require('dotenv').config()
 // Create express app
 const express = require('express');
 const nft = require('./routes/nft');
+const merkle = require('./routes/merkle');
 
 const app = express();
 
@@ -10,6 +11,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // routes
 app.use(nft);
+app.use(merkle);
 
 //default
 app.use((req, res, next)=>{

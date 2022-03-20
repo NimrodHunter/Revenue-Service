@@ -1,0 +1,17 @@
+image: registry.gitlab.com/nimrodhunter/revenue-service:latest
+
+stages:
+  - lint
+  - test
+
+cache:
+  paths:
+    -node_modules/
+
+lint:
+  script:
+  - echo "linting"
+
+test:
+  script:
+    - echo "testint"

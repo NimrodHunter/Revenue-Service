@@ -33,23 +33,23 @@ const addLoyalAmounts = (nfts) => {
 
 const createMerkleTree = (blockNft) => {
     const leaves = blockNft.nfts.map((nft) => {
-        return utils.solidityKeccak256(["uint", "uint", "uint", "uint"], [blockNft.block, blockNft.timestamp, nft.id, nft.reward]);
+        return utils.solidityKeccak256(["uint256", "uint256"], [nft.id, nft.reward]);
     })
     const tree = new MerkleTree(leaves, utils.keccak256, { sort: true });
     return tree.getHexRoot();
 }
 
 
-const mProof = async (blockNft, id) => {
+const mProof = (blockNft, id) => {
     const nft = blockNft.nfts.find(nft => nft.id.localeCompare(id.toString()) === 0);
-    const leaf = utils.solidityKeccak256(["uint", "uint", "uint", "uint"], [blockNft.block, blockNft.timestamp, nft.id, nft.reward]);
+    const leaf = utils.solidityKeccak256(["uint256", "uint256"], [nft.id, nft.reward]);
     const leaves = blockNft.nfts.map((nft) => {
-        return utils.solidityKeccak256(["uint", "uint", "uint", "uint"], [blockNft.block, blockNft.timestamp, nft.id, nft.reward]);
+        return utils.solidityKeccak256(["uint256", "uint256"], [nft.id, nft.reward]);
     })
     const tree = new MerkleTree(leaves, utils.keccak256, { sort: true });
-    const proof = await tree.getHexProof(leaf)
+    const proof = tree.getHexProof(leaf)
 
-    return { proof, leaf };
+    return { proof, leaf, reward: nft.reward };
 }
 
 const merkleByProject = async (req, res) => {
@@ -79,7 +79,7 @@ const merkleByProjectBlock = async (req, res) => {
         blockNfts.nfts = addLoyalAmounts(blockNfts.nfts);
         if (blockNfts.nfts instanceof Error) res.status(500).send({ error: blockNfts.nfts.message });
         const tree = createMerkleTree(blockNfts);
-        res.status(200).json({  "block":blockNfts.block, "timestamp":blockNfts.timestamp, "root":tree });
+        res.status(200).json({ "block":blockNfts.block, "timestamp":blockNfts.timestamp, "root":tree });
     }
 }
 
@@ -96,8 +96,8 @@ const merkleProof = async (req, res) => {
         if (!blockNfts.nfts.length) res.status(400).send({ error: 'project has not nfts minted yet' });
         blockNfts.nfts = addLoyalAmounts(blockNfts.nfts);
         if (blockNfts.nfts instanceof Error) res.status(500).send({ error: blockNfts.nfts.message });
-        const result = await mProof(blockNfts, id);
-        res.status(200).json({ result });
+        const result = mProof(blockNfts, id);
+        res.status(200).json({ "nftProof": result });
     }
 }
 

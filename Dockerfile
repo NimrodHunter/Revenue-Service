@@ -7,9 +7,6 @@ ENV PATH=$PATH:/home/node/.npm-global/bin
 RUN mkdir -p /usr/src/app/node_modules && chown -R node:node /usr/src/app
 WORKDIR /usr/src/app
 
-# Set User
-USER node
-
 # Install app dependencies
 COPY package*.json /usr/src/app/
 RUN npm install
@@ -19,9 +16,11 @@ COPY --chown=node:node . .
 
 VOLUME ["/usr/src/app", "/usr/src/app/node_modules"]
 
-
 # expose th port
 EXPOSE 3000
 
 # start app
-CMD ["node","app.js"]
+CMD ["node", "app.js"]
+
+# Set User
+USER node

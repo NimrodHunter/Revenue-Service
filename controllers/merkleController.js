@@ -49,7 +49,7 @@ const mProof = (blockNft, id) => {
     const tree = new MerkleTree(leaves, utils.keccak256, { sort: true });
     const proof = tree.getHexProof(leaf)
 
-    return { proof, leaf, reward: nft.reward };
+    return { reward: nft.reward, leaf, proof };
 }
 
 const merkleByProject = async (req, res) => {
@@ -61,9 +61,9 @@ const merkleByProject = async (req, res) => {
         const blockNfts = await projectNFTs(project);
         if (!blockNfts.nfts.length) res.status(400).send({ error: 'project has not nfts minted yet' });
         blockNfts.nfts = addLoyalAmounts(blockNfts.nfts);
-        if (blockNfts.nfts instanceof Error) res.status(500).send({ error: blockNfts.nfts.message });
+        if (blockNfts.nfts instanceof Error) res.status(500).send({ error: "provider error...try again" });
         const tree = createMerkleTree(blockNfts);
-        res.status(200).json({  "block":blockNfts.block, "timestamp":blockNfts.timestamp, "root":tree });
+        res.status(200).json({ "block":blockNfts.block, "timestamp":blockNfts.timestamp, "root":tree });
     }
 }
 
@@ -77,7 +77,7 @@ const merkleByProjectBlock = async (req, res) => {
         const blockNfts = await projectNFTsByBlock(project, block);
         if (!blockNfts.nfts.length) res.status(400).send({ error: 'project has not nfts minted yet' });
         blockNfts.nfts = addLoyalAmounts(blockNfts.nfts);
-        if (blockNfts.nfts instanceof Error) res.status(500).send({ error: blockNfts.nfts.message });
+        if (blockNfts.nfts instanceof Error) res.status(500).send({ error: "provider error...try again" });
         const tree = createMerkleTree(blockNfts);
         res.status(200).json({ "block":blockNfts.block, "timestamp":blockNfts.timestamp, "root":tree });
     }
@@ -95,15 +95,11 @@ const merkleProof = async (req, res) => {
         const blockNfts = await projectNFTsByBlock(project, block);
         if (!blockNfts.nfts.length) res.status(400).send({ error: 'project has not nfts minted yet' });
         blockNfts.nfts = addLoyalAmounts(blockNfts.nfts);
-        if (blockNfts.nfts instanceof Error) res.status(500).send({ error: blockNfts.nfts.message });
+        if (blockNfts.nfts instanceof Error) res.status(500).send({ error: "provider error...try again" });
         const result = mProof(blockNfts, id);
         res.status(200).json({ "nftProof": result });
     }
 }
-
-
-
-
 
 module.exports = { merkleByProject, merkleByProjectBlock, merkleProof };
 

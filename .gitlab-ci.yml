@@ -4,10 +4,6 @@ stages:
   - lint
   - test
 
-cache:
-  paths:
-    -node_modules/
-
 lint:
   script:
   - echo "linting"

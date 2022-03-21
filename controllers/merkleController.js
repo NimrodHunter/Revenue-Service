@@ -66,7 +66,7 @@ const merkleByProject = async (req, res) => {
             else {
                 blockNfts.nfts = addLoyalAmounts(blockNfts.nfts);
                 const tree = createMerkleTree(blockNfts);
-                res.status(200).json({ "block":blockNfts.block, "timestamp":blockNfts.timestamp, "root":tree });
+                res.status(200).json({ "block":blockNfts.blockNumber, "timestamp":blockNfts.timestamp, "root":tree });
             }
         }
     }
@@ -86,7 +86,7 @@ const merkleByProjectBlock = async (req, res) => {
             else {
                 blockNfts.nfts = addLoyalAmounts(blockNfts.nfts);
                 const tree = createMerkleTree(blockNfts);
-                res.status(200).json({ "block":blockNfts.block, "timestamp":blockNfts.timestamp, "root":tree });
+                res.status(200).json({ "block":blockNfts.blockNumber, "timestamp":blockNfts.timestamp, "root":tree });
             }
         }
     }

@@ -11,7 +11,7 @@ const nftByUser = async (req, res) => {
     } else {
         const nfts = await addressNFTs(address);
         if (nfts instanceof Error) res.status(500).send({ error: "provider error...try again" });
-        res.status(200).json({ nfts });
+        else res.status(200).json({ nfts });
     }
 };
 
@@ -23,7 +23,7 @@ const nftByProject = async (req, res) => {
     } else {
         const blockNfts = await projectNFTs(project);
         if (blockNfts.nfts instanceof Error) res.status(500).send({ error: "provider error...try again" });
-        res.status(200).json({ blockNfts });
+        else res.status(200).json({ blockNfts });
     }
 };
 
@@ -36,7 +36,7 @@ const nftDataController = async (req, res) => {
     } else {
         const nft = await nftData(project, id);
         if (nft instanceof Error) res.status(500).send({ error: "provider error...try again" });
-        res.status(200).json({ nft });
+        else res.status(200).json({ nft });
     }
 };
 

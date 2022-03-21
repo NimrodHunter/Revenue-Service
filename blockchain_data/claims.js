@@ -5,10 +5,10 @@ const factoryAbi = require('../abis/factory.json');
 const rewardAbi = require('../abis/reward.json');
 const tokenAbi = require('../abis/token.json');
 const rewardImplementation = require('../utils/reward');
-const { addressNFTs } = require('./nfts');
+const { addressNFTs, nftData } = require('./nfts');
 
 const projectClaims = async (project, id) => {
-    let claims = [] ;
+    let claims = [];
     const factoryContract = new ethers.Contract(factoryAddress, factoryAbi, provider);
     let rewardContract = new ethers.Contract(rewardImplementation, rewardAbi, provider);
     try {
@@ -18,21 +18,26 @@ const projectClaims = async (project, id) => {
                 const claimables = await factoryContract.revenuesAddress(i);
                 rewardContract = rewardContract.attach(claimables);
                 const nftAddress = await rewardContract.nft();
-                if (nftAddress.localCompare(project) === 0) {
+                if (nftAddress.localeCompare(project) === 0) {
                     const claimed = await rewardContract.claimed(id);
-                    if (!claimed) {
+                    const nftInfo = await nftData(project, id);
+                    if (nftInfo instanceof Error) return nftInfo;
+                    let blockNumber = await rewardContract.blockNumber();
+                    blockNumber = blockNumber.toNumber();
+                    const block = await provider.getBlock(blockNumber);
+                    if (!claimed && parseInt(nftInfo.createAt) <= block.timestamp) {
                         const rewardToken = await rewardContract.rewardToken();
                         const tokenContract = new ethers.Contract(rewardToken, tokenAbi, provider);
                         const symbol = await tokenContract.symbol();
                         const revenue = await rewardContract.revenue();
-                        const blockNumber = await rewardContract.blockNumber();
                         claims.push({
+                            contract: claimables,
+                            blockNumber: blockNumber,
                             token: {
                                 address: rewardToken.address,
                                 symbol: symbol,
                                 revenue: revenue.toString()
-                            },
-                            blockNumber
+                            }
                         })
                     }
                 }
@@ -40,26 +45,28 @@ const projectClaims = async (project, id) => {
         }
     } catch (e) {
         console.log(e.code)
-        claims = e;
+        return e;
     }
     return claims;
 }
 
 const userClaims = async (user) => {
-    let totalClaims = [] ;
+    let totalClaims = [];
     try {
         const nfts = await addressNFTs(user);
+        if (nfts instanceof Error) return nfts;
         await Promise.all(nfts.map(async (nft) => {
-            const claims = await projectClaims(nft.project, parseInt(nft.nft.id))
+            const claims = await projectClaims(nft.project, parseInt(nft.nft[0].id))
+            if (claims instanceof Error) return claims;
             totalClaims.push({
                 project: nft.project,
-                nftId: nft.nft.id,
-                claims: claims
+                nftId: nft.nft[0].id,
+                revenues: claims
             })
         }));
     } catch (e) {
         console.log(e.code)
-        totalClaims = e;
+        return e;
     }
     return totalClaims;
 }
